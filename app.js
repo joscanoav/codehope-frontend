@@ -1,5 +1,8 @@
 // --- CONSTANTES Y DATOS DE NIVELES ---
 
+// URL de tu backend en Render
+const BACKEND_URL = 'https://codehope-backend.onrender.com';
+
 const MAX_POINTS = 150; // 25*4 + 40 + 10 Bonus
 const LEVEL_DATA = {
     1: {
@@ -62,83 +65,85 @@ const LEVEL_DATA = {
 };
 
 const PLANET_SPRITES = {
-    0: 'https://placehold.co/100x100/050505/555?text=Planeta+0%25', // Planeta triste/contaminado
-    25: 'https://placehold.co/100x100/050505/7FEAF6?text=Planeta+25%25', // Empezando a brillar
-    50: 'https://placehold.co/100x100/050505/00FF9C?text=Planeta+50%25', // Más verde
-    75: 'https://placehold.co/100x100/050505/ADFF2F?text=Planeta+75%25', // Brillante
-    100: 'https://placehold.co/100x100/050505/FFFFFF?text=Planeta+100%25' // Restaurado
+    0: 'https://placehold.co/100x100/050505/555?text=Planeta+0%25',
+    25: 'https://placehold.co/100x100/050505/7FEAF6?text=Planeta+25%25',
+    50: 'https://placehold.co/100x100/050505/00FF9C?text=Planeta+50%25',
+    75: 'https://placehold.co/100x100/050505/ADFF2F?text=Planeta+75%25',
+    100: 'https://placehold.co/100x100/050505/FFFFFF?text=Planeta+100%25'
 };
 
 // --- ESTADO DE LA APLICACIÓN ---
  
 let db = {
     teamName: '',
-    teamClass: '', // Añadido
-    evidenceList: [] // { team, teamClass, level, points, note, link, timestamp, validated, sentToDashboard }
+    teamClass: '',
+    evidenceList: [] // Esto se cargará desde el backend
 };
 let currentLevel = null;
 let currentView = 'map';
 
 // --- INICIALIZACIÓN ---
  
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Hecho async
     console.log('CODE HOPE Agente listo.');
-    loadData();
-    initializeApp();
+    
+    // Cargar nombre y clase de localStorage (esto sigue local)
+    db.teamName = localStorage.getItem('codeHopeTeam') || '';
+    db.teamClass = localStorage.getItem('codeHopeTeamClass') || '';
+    document.getElementById('team-name-input').value = db.teamName;
+    document.getElementById('team-class-select').value = db.teamClass;
+
+    await loadDataFromBackend(); // Esperar a que carguen los datos del backend
+    
+    initializeAppUI(); // Función separada para inicializar UI
     attachEventListeners();
 });
 
-function initializeApp() {
-    // Sincronizar UI con datos cargados
-    document.getElementById('team-name-input').value = db.teamName;
-    document.getElementById('team-class-select').value = db.teamClass; // Añadido
+// Inicializa la UI después de que los datos se han cargado
+function initializeAppUI() {
     updateHUD();
     renderMap();
-    // Mostrar la vista de mapa por defecto
-    navigateTo('map');
+    navigateTo('map'); // Mostrar vista inicial
 }
 
-// --- MANEJO DE DATOS (LocalStorage) ---
+// --- MANEJO DE DATOS (Backend y LocalStorage) ---
 
-function loadData() {
-    const team = localStorage.getItem('codeHopeTeam');
-    const teamClass = localStorage.getItem('codeHopeTeamClass'); // Añadido
-    const evidences = localStorage.getItem('codeHopeEvidenceList');
-    
-    if (team) {
-        db.teamName = team;
+async function loadDataFromBackend() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/evidence`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    if (teamClass) { // Añadido
-        db.teamClass = teamClass;
-    }
-    if (evidences) {
-        try {
-            db.evidenceList = JSON.parse(evidences);
-        } catch (e) {
-            console.error('Error al parsear evidencias:', e);
-            db.evidenceList = [];
-        }
-    }
-    console.log('Datos cargados:', db);
+    const allEvidence = await response.json();
+
+    // Guardamos TODAS las evidencias en db.evidenceList para el dashboard
+    db.evidenceList = allEvidence;
+
+    console.log('Datos cargados desde el backend:', db);
+
+  } catch (error) {
+    console.error("Error al cargar datos del backend:", error);
+    showErrorModal("No se pudieron cargar los datos del servidor. Inténtalo más tarde.");
+    db.evidenceList = []; // Empezar vacío si falla la carga inicial
+  }
 }
 
-function saveData() {
+// Guardar solo nombre y clase en localStorage
+function saveLocalTeamInfo() {
     localStorage.setItem('codeHopeTeam', db.teamName);
-    localStorage.setItem('codeHopeTeamClass', db.teamClass); // Añadido
-    localStorage.setItem('codeHopeEvidenceList', JSON.stringify(db.evidenceList));
-    console.log('Datos guardados.');
+    localStorage.setItem('codeHopeTeamClass', db.teamClass);
+    console.log('Información del equipo guardada localmente.');
 }
 
 function setTeamName(name) {
     db.teamName = name.trim();
-    saveData();
+    saveLocalTeamInfo(); // Modificado
     updateHUD();
 }
 
-// Añadida función para guardar clase
 function setTeamClass(teamClass) {
     db.teamClass = teamClass;
-    saveData();
+    saveLocalTeamInfo(); // Modificado
 }
 
 // --- NAVEGACIÓN Y RENDERIZADO ---
@@ -148,7 +153,6 @@ function navigateTo(view, levelId = null) {
     currentView = view;
     currentLevel = levelId;
 
-    // Ocultar todas las vistas
     document.querySelectorAll('.view-container').forEach(el => {
         el.style.display = 'none';
     });
@@ -162,7 +166,6 @@ function navigateTo(view, levelId = null) {
         renderDashboardTable();
     }
 
-    // Mostrar la vista activa
     const activeView = document.getElementById(viewId);
     if (activeView) {
         activeView.style.display = 'block';
@@ -170,54 +173,21 @@ function navigateTo(view, levelId = null) {
         console.error(`Vista no encontrada: ${viewId}`);
         document.getElementById('view-map').style.display = 'block';
     }
-    window.scrollTo(0, 0); // Volver arriba
+    window.scrollTo(0, 0);
 }
 
 function updateHUD() {
-    // Actualizar nombre
     document.getElementById('team-name-display').textContent = db.teamName || '---';
 
-    // Actualizar puntos y barra
-    let score = 0;
-    let validatedCount = 0;
-    const completedLevels = new Set();
-    
-    db.evidenceList.forEach(ev => {
-        if (ev.team === db.teamName) {
-            if (ev.validated) {
-                score += ev.points;
-                validatedCount++;
-                completedLevels.add(ev.level);
-            } else if (!ev.validated && !completedLevels.has(ev.level)) {
-                // Contar la primera entrega pendiente si aún no está validada
-                score += ev.points;
-                completedLevels.add(ev.level);
-            }
-        }
-    });
-    
-    // Comprobar bonus (simplificado: si los 5 niveles tienen al menos una entrada validada)
-    const allValidated = [1, 2, 3, 4, 5].every(level => 
-        db.evidenceList.some(ev => ev.team === db.teamName && ev.level === level && ev.validated)
-    );
-    
-    if (allValidated) {
-        // Asumimos que el profe añade el bonus. Aquí solo lo mostramos si ya está.
-        // Para lógica real, el profe necesitaría un botón "Calcular Final"
-    }
-    
-    // Puntuación provisional (contando no validadas)
     const provisionalScore = getProvisionalScore();
     
     document.getElementById('total-points-display').textContent = provisionalScore;
 
-    // Actualizar barra de progreso
     const progressPercent = (provisionalScore / MAX_POINTS) * 100;
     const expBar = document.getElementById('exp-bar-inner');
     expBar.style.width = `${Math.min(progressPercent, 100)}%`;
     expBar.textContent = `${Math.round(provisionalScore)} pts`;
 
-    // Actualizar planeta
     const planetImg = document.getElementById('planet-sprite');
     if (progressPercent >= 100) planetImg.src = PLANET_SPRITES[100];
     else if (progressPercent >= 75) planetImg.src = PLANET_SPRITES[75];
@@ -230,8 +200,8 @@ function getProvisionalScore() {
     let score = 0;
     const completedLevels = new Set();
     db.evidenceList
-        .filter(ev => ev.team === db.teamName)
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)) // Ordenar por fecha
+        .filter(ev => ev.team === db.teamName) // Usar 'team' (de Mongoose)
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // Usar 'createdAt'
         .forEach(ev => {
             if (!completedLevels.has(ev.level)) {
                 score += ev.points;
@@ -239,9 +209,8 @@ function getProvisionalScore() {
             }
         });
     
-    // Bonus provisional si los 5 están entregados (aunque no validados)
     if (completedLevels.size === 5) {
-        score += 10; // Añadir el bonus de 10
+        score += 10;
     }
     
     return Math.min(score, MAX_POINTS);
@@ -250,10 +219,9 @@ function getProvisionalScore() {
 function renderMap() {
     const completedLevels = new Set(
         db.evidenceList
-            .filter(ev => ev.team === db.teamName)
+            .filter(ev => ev.team === db.teamName) // Usar 'team'
             .map(ev => ev.level)
     );
-    const lastCompleted = Math.max(0, ...completedLevels);
 
     for (let i = 1; i <= 5; i++) {
         const tile = document.getElementById(`tile-level-${i}`);
@@ -293,20 +261,19 @@ function populateLevelTemplate(levelId) {
     document.getElementById('level-narrative').textContent = data.narrative;
     
     const instructionsList = document.getElementById('level-instructions');
-    instructionsList.innerHTML = ''; // Limpiar
+    instructionsList.innerHTML = '';
     data.instructions.forEach(text => {
         const li = document.createElement('li');
         li.textContent = text;
         instructionsList.appendChild(li);
     });
     
-    // Limpiar campos
     document.getElementById('level-link-input').value = '';
     document.getElementById('level-note-input').value = '';
     document.getElementById('scratch-ok-badge').style.display = 'none';
     
     // Comprobar si ya existe evidencia
-    const existingEvidence = db.evidenceList.find(ev => ev.team === db.teamName && ev.level === levelId);
+    const existingEvidence = db.evidenceList.find(ev => ev.team === db.teamName && ev.level == levelId);
     const saveButton = document.getElementById('level-save-button');
     const copyButton = document.getElementById('level-copy-button');
     
@@ -320,7 +287,6 @@ function populateLevelTemplate(levelId) {
         copyButton.disabled = true;
     }
     
-    // Validar enlace de scratch al escribir
     const linkInput = document.getElementById('level-link-input');
     const scratchBadge = document.getElementById('scratch-ok-badge');
     linkInput.oninput = () => {
@@ -334,7 +300,7 @@ function populateLevelTemplate(levelId) {
 
 function renderDashboardTable() {
     const tbody = document.getElementById('dashboard-table-body');
-    tbody.innerHTML = ''; // Limpiar
+    tbody.innerHTML = '';
     
     const teamFilter = document.getElementById('filter-team').value.toLowerCase();
     const levelFilter = document.getElementById('filter-level').value;
@@ -346,7 +312,7 @@ function renderDashboardTable() {
         const statusMatch = !statusFilter || 
             (statusFilter === 'pending' && !ev.validated && !ev.correctionNote) ||
             (statusFilter === 'validated' && ev.validated) ||
-            (statusFilter === 'correction' && !!ev.correctionNote); // Asumimos que 'correction' tiene 'correctionNote'
+            (statusFilter === 'correction' && !!ev.correctionNote);
         
         return teamMatch && levelMatch && statusMatch;
     });
@@ -358,7 +324,7 @@ function renderDashboardTable() {
     
     filteredList.forEach(ev => {
         const tr = document.createElement('tr');
-        tr.dataset.id = ev.timestamp; // Usar timestamp como ID único
+        tr.dataset.id = ev._id; // Usar _id de MongoDB
         
         let statusText = '<span class="status-pending">Pendiente</span>';
         if (ev.validated) {
@@ -372,20 +338,19 @@ function renderDashboardTable() {
             <td>${ev.level}</td>
             <td>${ev.points}</td>
             <td><a href="${ev.link}" target="_blank" class="text-accent underline truncate" style="max-width: 150px; display: block;">${ev.link}</a></td>
-            <td class="text-sm">${ev.note}</td>
-            <td class="text-sm">${new Date(ev.timestamp).toLocaleString('es-ES')}</td>
+            <td class="text-sm">${ev.note || ''}</td>
+            <td class="text-sm">${new Date(ev.createdAt).toLocaleString('es-ES')}</td> {/* Usar createdAt */}
             <td>${statusText}</td>
             <td class="flex flex-col gap-1">
                 <button class="action-button" data-action="view" data-link="${ev.link}">Ver</button>
-                <button class="action-button validate" data-action="validate" data-id="${ev.timestamp}">Validar</button>
-                <button class="action-button" data-action="correct" data-id="${ev.timestamp}">Corrección</button>
-                <button class="action-button" data-action="classdojo" data-id="${ev.timestamp}">ClassDojo</button>
+                <button class="action-button validate" data-action="validate" data-id="${ev._id}">Validar</button> {/* Usar _id */}
+                <button class="action-button" data-action="correct" data-id="${ev._id}">Corrección</button> {/* Usar _id */}
+                <button class="action-button" data-action="classdojo" data-id="${ev._id}">ClassDojo</button> {/* Usar _id */}
             </td>
         `;
         tbody.appendChild(tr);
     });
     
-    // Añadir listeners a los nuevos botones
     attachDashboardActionListeners();
 }
 
@@ -406,7 +371,7 @@ function renderEvidencesModal() {
         if (ev.validated) {
             statusText = '¡Validado!';
             statusClass = 'text-green-400';
-        } else if (ev.correctionNote) {
+        } else if (ev.correctionNote) { // Usar 'correctionNote'
             statusText = `Corrección: ${ev.correctionNote}`;
             statusClass = 'text-yellow-500';
         }
@@ -453,7 +418,6 @@ function attachEventListeners() {
                 showErrorModal('¡Nivel bloqueado! Completa el nivel anterior para desbloquear este.');
             }
         });
-        // Accesibilidad: permitir "click" con tecla Enter
         tile.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && tile.classList.contains('unlocked')) {
                 navigateTo('level', e.currentTarget.dataset.level);
@@ -475,17 +439,17 @@ function attachEventListeners() {
     document.getElementById('filter-status').addEventListener('change', renderDashboardTable);
     
     // Botones de acción del Dashboard
-    document.getElementById('dashboard-refresh').addEventListener('click', () => {
-        loadData(); // Recargar desde localStorage
+    document.getElementById('dashboard-refresh').addEventListener('click', async () => {
+        console.log('Refrescando datos desde el backend...');
+        await loadDataFromBackend(); // Llama a la función de carga del backend
         renderDashboardTable();
-        showToast('Datos refrescados desde LocalStorage.');
+        showToast('Datos refrescados desde el Servidor.');
     });
     document.getElementById('dashboard-export-csv').addEventListener('click', handleExportCSV);
 }
 
 function attachDashboardActionListeners() {
     document.querySelectorAll('#dashboard-table .action-button').forEach(btn => {
-        // Prevenir doble listener
         btn.replaceWith(btn.cloneNode(true));
     });
     
@@ -496,13 +460,12 @@ function attachDashboardActionListeners() {
 
 // --- LÓGICA DE ACCIONES ---
 
-function handleSaveEvidence() {
+async function handleSaveEvidence() { // Hecho async
     const teamName = db.teamName;
-    const teamClass = db.teamClass; // Añadido
+    const teamClass = db.teamClass;
     const link = document.getElementById('level-link-input').value.trim();
     
-    // Validación
-    if (!teamName || !teamClass) { // Modificado
+    if (!teamName || !teamClass) {
         showErrorModal('¡Agente, necesitas un nombre Y un aula! Revisa el Tablero antes de guardar.');
         return;
     }
@@ -515,54 +478,66 @@ function handleSaveEvidence() {
     const data = LEVEL_DATA[level];
     const note = document.getElementById('level-note-input').value.trim();
     
-    const evidence = {
+    const evidenceData = {
         team: teamName,
-        teamClass: teamClass, // Añadido
+        teamClass: teamClass,
         level: parseInt(level),
         points: data.points,
         note: note,
         link: link,
-        timestamp: new Date().toISOString(),
-        validated: false,
-        sentToDashboard: false, // (No se usa activamente aquí, pero se guarda)
-        correctionNote: null
     };
-    
-    // Comprobar si es una actualización o uno nuevo
-    const existingIndex = db.evidenceList.findIndex(ev => ev.team === teamName && ev.level === parseInt(level));
-    
-    if (existingIndex > -1) {
-        // Actualizar (y resetear validación si cambia el link)
-        const oldEvidence = db.evidenceList[existingIndex];
-        evidence.validated = oldEvidence.link === link ? oldEvidence.validated : false; // Resetea validación si el link cambia
-        evidence.correctionNote = oldEvidence.link === link ? oldEvidence.correctionNote : null;
-        db.evidenceList[existingIndex] = evidence;
-        showToast(`Evidencia del Nivel ${level} actualizada. ¡+${data.points} pts (pendientes)!`);
-    } else {
-        // Nuevo
-        db.evidenceList.push(evidence);
-        showToast(`¡Genial, ${teamName}! Evidencia del Nivel ${level} guardada. ¡+${data.points} pts (pendientes)!`);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/evidence`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(evidenceData),
+      });
+
+      if (!response.ok) {
+         const errorData = await response.json();
+         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const savedEvidence = await response.json();
+
+      // Actualizar la lista local de evidencias
+      const existingIndex = db.evidenceList.findIndex(ev => ev._id === savedEvidence._id); // Usar _id
+       if (existingIndex > -1) {
+          db.evidenceList[existingIndex] = savedEvidence;
+      } else {
+          // Si es nuevo (upsert), buscar por filtro ya que _id puede no estar
+          const findIndex = db.evidenceList.findIndex(ev => ev.team === savedEvidence.team && ev.level === savedEvidence.level && ev.teamClass === savedEvidence.teamClass);
+          if (findIndex > -1) {
+             db.evidenceList[findIndex] = savedEvidence;
+          } else {
+             db.evidenceList.push(savedEvidence);
+          }
+      }
+
+      showToast(`Evidencia del Nivel ${level} guardada/actualizada. ¡+${data.points} pts (pendientes)!`);
+      updateHUD();
+      renderMap();
+      document.getElementById('level-copy-button').disabled = false;
+
+      // Comprobar victoria
+      const completedLevels = new Set(
+         db.evidenceList
+           .filter(ev => ev.team === db.teamName)
+           .map(ev => ev.level)
+      );
+       if (completedLevels.size === 5) {
+           handleVictory();
+       }
+
+      setTimeout(() => navigateTo('map'), 1000);
+
+    } catch (error) {
+      console.error("Error al guardar evidencia:", error);
+      showErrorModal(`Error al guardar: ${error.message}`);
     }
-    
-    saveData();
-    updateHUD();
-    renderMap();
-    
-    // Activar botón de copiar
-    document.getElementById('level-copy-button').disabled = false;
-    
-    // Comprobar victoria
-    const completedLevels = new Set(
-        db.evidenceList
-            .filter(ev => ev.team === db.teamName)
-            .map(ev => ev.level)
-    );
-    if (completedLevels.size === 5) {
-        handleVictory();
-    }
-    
-    // Volver al mapa
-    setTimeout(() => navigateTo('map'), 1000);
 }
 
 function handleCopyEvidence() {
@@ -579,8 +554,8 @@ function handleCopyEvidence() {
 EVIDENCIA: Equipo: ${evidence.team} (Aula: ${evidence.teamClass || 'N/A'})
 Nivel: ${evidence.level}
 Puntos: ${evidence.points}
-Timestamp: ${evidence.timestamp}
-Nota: ${evidence.note}
+Timestamp: ${evidence.createdAt}
+Nota: ${evidence.note || ''}
 Link: ${evidence.link}
     `.trim();
     
@@ -606,7 +581,7 @@ function handleScratchPreview() {
         iframe.setAttribute('scrolling', 'no');
         iframe.className = 'w-full h-full';
         container.appendChild(iframe);
-        fallback.style.display = 'block'; // Mostrar siempre el fallback
+        fallback.style.display = 'block';
     } else {
         container.innerHTML = '<p class="text-red-500 text-center p-8">No parece un enlace de Scratch válido. (Debe ser .../projects/ID/...)</p>';
         fallback.style.display = 'none';
@@ -615,70 +590,77 @@ function handleScratchPreview() {
     openModal('modal-scratch-preview');
 }
 
-function handleDashboardAction(e) {
+async function handleDashboardAction(e) { // Hecho async
     const btn = e.currentTarget;
     const action = btn.dataset.action;
-    const timestamp = btn.dataset.id || btn.closest('tr').dataset.id;
-    
-    const evidenceIndex = db.evidenceList.findIndex(ev => ev.timestamp === timestamp);
-    if (evidenceIndex === -1) {
-        showErrorModal('Error: No se encontró la evidencia.');
-        return;
-    }
-    
-    let evidence = db.evidenceList[evidenceIndex];
-    
-    switch(action) {
-        case 'view':
-            const link = btn.dataset.link;
-            if (link.includes('scratch.mit.edu')) {
-                // Usar el modal de preview
-                const embedUrl = getScratchEmbedUrl(link);
-                const container = document.getElementById('scratch-embed-container');
-                const fallback = document.getElementById('scratch-fallback-message');
-                const openLink = document.getElementById('scratch-open-link');
-                container.innerHTML = '';
-                openLink.href = link;
-                if (embedUrl) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = embedUrl;
-                    iframe.className = 'w-full h-full aspect-video'; // Mantenido aspect-video
-                    container.appendChild(iframe);
-                    fallback.style.display = 'block';
-                }
-                openModal('modal-scratch-preview');
-            } else {
-                // Abrir en nueva pestaña
-                window.open(link, '_blank');
-            }
-            break;
-        
-        case 'validate':
-            evidence.validated = true;
-            evidence.correctionNote = null;
-            db.evidenceList[evidenceIndex] = evidence;
-            saveData();
-            renderDashboardTable();
-            showToast(`Evidencia de ${evidence.team} (Nivel ${evidence.level}) VALIDADA.`);
-            break;
-            
-        case 'correct':
-            const note = prompt('Añade una nota de corrección para el equipo (o deja en blanco para marcar "Pendiente"):');
-            if (note !== null) { // Si no pulsa "Cancelar"
-                evidence.validated = false;
-                evidence.correctionNote = note || 'Revisar, por favor.';
-                db.evidenceList[evidenceIndex] = evidence;
-                saveData();
-                renderDashboardTable();
-                showToast(`Evidencia de ${evidence.team} marcada para CORRECCIÓN.`);
-            }
-            break;
-            
-        case 'classdojo':
-            const dojoText = `Asignar ${evidence.points} pts a Equipo ${evidence.team} en ClassDojo — motivo: Nivel ${evidence.level} validado. Evidencia: ${evidence.link}`;
-            copyToClipboard(dojoText);
-            showToast('¡Texto para ClassDojo copiado!');
-            break;
+    const evidenceId = btn.dataset.id || btn.closest('tr').dataset.id; // Es el _id de MongoDB
+
+    const evidenceIndex = db.evidenceList.findIndex(ev => ev._id == evidenceId);
+     if (evidenceIndex === -1) {
+         showErrorModal('Error: No se encontró la evidencia localmente.');
+         return;
+     }
+     let evidence = db.evidenceList[evidenceIndex];
+
+    try {
+       switch(action) {
+           case 'view':
+               const link = btn.dataset.link;
+               if (link.includes('scratch.mit.edu')) {
+                    const embedUrl = getScratchEmbedUrl(link);
+                    const container = document.getElementById('scratch-embed-container');
+                    const fallback = document.getElementById('scratch-fallback-message');
+                    const openLink = document.getElementById('scratch-open-link');
+                    container.innerHTML = '';
+                    openLink.href = link;
+                    if (embedUrl) {
+                        const iframe = document.createElement('iframe');
+                        iframe.src = embedUrl;
+                        iframe.className = 'w-full h-full aspect-video';
+                        container.appendChild(iframe);
+                        fallback.style.display = 'block';
+                    }
+                    openModal('modal-scratch-preview');
+               } else {
+                   window.open(link, '_blank');
+               }
+               break;
+           
+           case 'validate':
+               const validateResponse = await fetch(`${BACKEND_URL}/evidence/${evidenceId}/validate`, { method: 'PUT' });
+               if (!validateResponse.ok) throw new Error('Error al validar');
+               const updatedValidate = await validateResponse.json();
+               db.evidenceList[evidenceIndex] = updatedValidate; // Actualizar localmente
+               renderDashboardTable();
+               showToast(`Evidencia de ${evidence.team} (Nivel ${evidence.level}) VALIDADA.`);
+               break;
+               
+           case 'correct':
+               const note = prompt('Añade una nota de corrección para el equipo (o deja en blanco para marcar "Pendiente"):');
+               if (note !== null) {
+                   const correctionNote = note || 'Revisar, por favor.';
+                   const correctResponse = await fetch(`${BACKEND_URL}/evidence/${evidenceId}/correct`, {
+                     method: 'PUT',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ correctionNote: correctionNote })
+                   });
+                   if (!correctResponse.ok) throw new Error('Error al marcar corrección');
+                   const updatedCorrect = await correctResponse.json();
+                   db.evidenceList[evidenceIndex] = updatedCorrect; // Actualizar localmente
+                   renderDashboardTable();
+                   showToast(`Evidencia de ${evidence.team} marcada para CORRECCIÓN.`);
+               }
+               break;
+               
+           case 'classdojo':
+                const dojoText = `Asignar ${evidence.points} pts a Equipo ${evidence.team} en ClassDojo — motivo: Nivel ${evidence.level} validado. Evidencia: ${evidence.link}`;
+                copyToClipboard(dojoText);
+                showToast('¡Texto para ClassDojo copiado!');
+               break;
+       }
+    } catch (error) {
+         console.error(`Error en acción ${action}:`, error);
+         showErrorModal(`Error al realizar la acción: ${error.message}`);
     }
 }
 
@@ -691,9 +673,7 @@ function handleExportCSV() {
     const headers = ['Equipo', 'Aula', 'Nivel', 'Puntos', 'Link', 'Nota', 'Timestamp', 'Validado', 'NotaCorreccion'];
     let csvContent = headers.join(',') + '\n';
     
-    const listToExport = db.evidenceList; // Podríamos usar la lista filtrada
-    
-    listToExport.forEach(ev => {
+    db.evidenceList.forEach(ev => {
         const row = [
             `"${ev.team}"`,
             `"${ev.teamClass || ''}"`,
@@ -701,7 +681,7 @@ function handleExportCSV() {
             ev.points,
             `"${ev.link}"`,
             `"${(ev.note || '').replace(/"/g, '""')}"`,
-            ev.timestamp,
+            ev.createdAt, // Usar createdAt
             ev.validated,
             `"${(ev.correctionNote || '').replace(/"/g, '""')}"`
         ];
@@ -720,10 +700,9 @@ function handleExportCSV() {
 }
 
 function handleVictory() {
-    const score = getProvisionalScore(); // Usar la puntuación calculada
+    const score = getProvisionalScore();
     document.getElementById('victory-score-display').textContent = `Puntuación: ${score} pts`;
     openModal('modal-victory');
-    // Aquí podríamos añadir un sonido si tuviéramos Tone.js
 }
 
 // --- UTILIDADES ---
@@ -737,7 +716,6 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if(modal) {
         modal.classList.remove('active');
-        // Detener embed de scratch si existe
         if (modalId === 'modal-scratch-preview') {
             document.getElementById('scratch-embed-container').innerHTML = '';
         }
@@ -771,10 +749,9 @@ function getScratchEmbedUrl(link) {
 }
 
 function copyToClipboard(text) {
-    // Usar 'document.execCommand' como fallback para entornos restrictivos (iFrames)
     const textArea = document.createElement('textarea');
     textArea.value = text;
-    textArea.style.position = 'fixed'; // Evitar scroll
+    textArea.style.position = 'fixed';
     textArea.style.top = 0;
     textArea.style.left = 0;
     document.body.appendChild(textArea);
