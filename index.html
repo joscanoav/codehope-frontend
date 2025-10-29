@@ -69,7 +69,7 @@
                 <path d="M7 14h-2.5" />
                 <path d="M12 4.5c-1.333 .667 -2 2.333 -2 4.5" />
                 <path d="M12 4.5c1.333 .667 2 2.333 2 4.5" />
-            </SIEMPRE>
+            </symbol>
 
         </defs>
     </svg>
@@ -103,6 +103,7 @@
                 <div class="mb-10 p-2 border-4 border-gray-700 bg-gray-900">
                     <img src="mando-logo.jpg" alt="Mando CODE HOPE con logo del colegio N.S. de la Vega" class="w-full">
                 </div>
+                
                 <header class="text-center mb-10">
                     <h1 class="text-5xl md:text-7xl font-display text-glow mb-2">CODE HOPE</h1>
                     <h2 class="text-2xl md:text-3xl text-accent">Agentes por un Mundo Mejor</h2>
@@ -252,6 +253,16 @@
                         <label for="filter-team" class="block text-sm text-gray-400">Filtrar por Equipo</label>
                         <input type="text" id="filter-team" placeholder="Nombre del equipo..." class="text-base p-2">
                     </div>
+
+                    <div class="flex-1">
+                        <label for="filter-class" class="block text-sm text-gray-400">Filtrar por Aula</label>
+                        <select id="filter-class" class="w-full bg-gray-700 border-2 border-accent text-white p-2 text-base">
+                            <option value="">Todas</option>
+                            <option value="A">2º ESO A</option>
+                            <option value="B">2º ESO B</option>
+                            <option value="C">2º ESO C</option>
+                        </select>
+                    </div>
                     <div class="flex-1">
                         <label for="filter-level" class="block text-sm text-gray-400">Filtrar por Nivel</label>
                         <select id="filter-level" class="w-full bg-gray-700 border-2 border-accent text-white p-2 text-base">
@@ -273,7 +284,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="flex flex-wrap gap-4 mb-6 justify-center">
                     <button id="dashboard-refresh" class="pixel-button primary">Refrescar Datos</button>
                     <button id="dashboard-export-csv" class="pixel-button">Exportar CSV</button>

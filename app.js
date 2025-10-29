@@ -298,23 +298,29 @@ function populateLevelTemplate(levelId) {
     };
 }
 
+// ===== FUNCIÓN renderDashboardTable MODIFICADA =====
 function renderDashboardTable() {
     const tbody = document.getElementById('dashboard-table-body');
     tbody.innerHTML = '';
     
+    // Leer los valores de TODOS los filtros
     const teamFilter = document.getElementById('filter-team').value.toLowerCase();
+    const classFilter = document.getElementById('filter-class').value; // <-- NUEVO
     const levelFilter = document.getElementById('filter-level').value;
     const statusFilter = document.getElementById('filter-status').value;
     
     const filteredList = db.evidenceList.filter(ev => {
-        const teamMatch = !teamFilter || ev.team.toLowerCase().includes(teamFilter) || (ev.teamClass && ev.teamClass.toLowerCase().includes(teamFilter));
+        // Lógica de filtrado
+        const teamMatch = !teamFilter || ev.team.toLowerCase().includes(teamFilter);
+        const classMatch = !classFilter || ev.teamClass === classFilter; // <-- NUEVO
         const levelMatch = !levelFilter || ev.level == levelFilter;
         const statusMatch = !statusFilter || 
             (statusFilter === 'pending' && !ev.validated && !ev.correctionNote) ||
             (statusFilter === 'validated' && ev.validated) ||
             (statusFilter === 'correction' && !!ev.correctionNote);
         
-        return teamMatch && levelMatch && statusMatch;
+        // El item se muestra si cumple TODOS los filtros
+        return teamMatch && classMatch && levelMatch && statusMatch; // <-- AÑADIDO classMatch
     });
     
     if (filteredList.length === 0) {
@@ -333,7 +339,7 @@ function renderDashboardTable() {
             statusText = `<span class="status-correction">Corrección (${ev.correctionNote})</span>`;
         }
 
-tr.innerHTML = `
+        tr.innerHTML = `
             <td>${ev.team} (${ev.teamClass || 'N/A'})</td>
             <td>${ev.level}</td>
             <td>${ev.points}</td>
@@ -353,6 +359,7 @@ tr.innerHTML = `
     
     attachDashboardActionListeners();
 }
+// ===== FIN FUNCIÓN MODIFICADA =====
 
 function renderEvidencesModal() {
     const container = document.getElementById('evidences-list-container');
@@ -391,6 +398,7 @@ function renderEvidencesModal() {
 
 // --- MANEJO DE EVENTOS ---
  
+// ===== FUNCIÓN attachEventListeners MODIFICADA =====
 function attachEventListeners() {
     // Input de Nombre de Equipo
     document.getElementById('team-name-input').addEventListener('change', (e) => {
@@ -435,6 +443,7 @@ function attachEventListeners() {
     
     // Filtros del Dashboard
     document.getElementById('filter-team').addEventListener('input', renderDashboardTable);
+    document.getElementById('filter-class').addEventListener('change', renderDashboardTable); // <-- NUEVO LISTENER
     document.getElementById('filter-level').addEventListener('change', renderDashboardTable);
     document.getElementById('filter-status').addEventListener('change', renderDashboardTable);
     
@@ -447,6 +456,8 @@ function attachEventListeners() {
     });
     document.getElementById('dashboard-export-csv').addEventListener('click', handleExportCSV);
 }
+// ===== FIN FUNCIÓN MODIFICADA =====
+
 
 function attachDashboardActionListeners() {
     document.querySelectorAll('#dashboard-table .action-button').forEach(btn => {
