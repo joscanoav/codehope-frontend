@@ -333,19 +333,19 @@ function renderDashboardTable() {
             statusText = `<span class="status-correction">Corrección (${ev.correctionNote})</span>`;
         }
 
-        tr.innerHTML = `
+tr.innerHTML = `
             <td>${ev.team} (${ev.teamClass || 'N/A'})</td>
             <td>${ev.level}</td>
             <td>${ev.points}</td>
             <td><a href="${ev.link}" target="_blank" class="text-accent underline truncate" style="max-width: 150px; display: block;">${ev.link}</a></td>
             <td class="text-sm">${ev.note || ''}</td>
-            <td class="text-sm">${new Date(ev.createdAt).toLocaleString('es-ES')}</td> {/* Usar createdAt */}
+            <td class="text-sm">${new Date(ev.createdAt).toLocaleString('es-ES')}</td>
             <td>${statusText}</td>
             <td class="flex flex-col gap-1">
                 <button class="action-button" data-action="view" data-link="${ev.link}">Ver</button>
-                <button class="action-button validate" data-action="validate" data-id="${ev._id}">Validar</button> {/* Usar _id */}
-                <button class="action-button" data-action="correct" data-id="${ev._id}">Corrección</button> {/* Usar _id */}
-                <button class="action-button" data-action="classdojo" data-id="${ev._id}">ClassDojo</button> {/* Usar _id */}
+                <button class="action-button validate" data-action="validate" data-id="${ev._id}">Validar</button>
+                <button class="action-button" data-action="correct" data-id="${ev._id}">Corrección</button>
+                <button class="action-button" data-action="classdojo" data-id="${ev._id}">ClassDojo</button>
             </td>
         `;
         tbody.appendChild(tr);
