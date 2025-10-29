@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODE HOPE - 2º ESO</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <svg width="0" height="0" class="absolute">
+        <defs>
+            <symbol id="icon-lock" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+            </symbol>
+            <symbol id="icon-check-badge" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </symbol>
+            
+            <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M11 10h-3v4" />
+                <path d="M14 10v4h3" />
+                <path d="M8 10v4" />
+                <path d="M14 10h3" />
+                <path d="M11 10h3" />
+                <path d="M11 14h3" />
+                <path d="M8 14h3" />
+            </symbol>
+
+            <symbol id="icon-lightbulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M22 12h-3" />
+                <path d="M2 12h3" />
+                <path d="M5 12h10v-4a4 4 0 0 1 4 4v4a4 4 0 0 1 -4 4v-4" />
+            </symbol>
+
+            <symbol id="icon-recycle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M22 12h-3" />
+                <path d="M2 12h3" />
+                <path d="M5 12h10c3.5 0 3.5 -4 0 -4h-10c-3.5 0 -3.5 4 0 4c3.5 0 3.5 4 0 4h-10c-3.5 0 -3.5 -4 0 -4" />
+            </symbol>
+
+            <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <circle cx="15" cy="15" r="4" />
+                <path d="M18.5 18.5l2.5 2.5" />
+                <path d="M4 6h16" />
+                <path d="M4 12h4" />
+                <path d="M4 18h4" />
+            </symbol>
+
+            <symbol id="icon-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 8.5c-3.5 0 -5 2.42 -5 5v.5c0 1.9 1.5 3.5 5 3.5c3.5 0 5 -1.6 5 -3.5v-.5c0 -2.58 -1.5 -5 -5 -5z" />
+                <path d="M12 8.5v-4.5" />
+                <path d="M17 14h2.5" />
+                <path d="M14 17h2.5" />
+                <path d="M10 17h-2.5" />
+                <path d="M7 14h-2.5" />
+                <path d="M12 4.5c-1.333 .667 -2 2.333 -2 4.5" />
+                <path d="M12 4.5c1.333 .667 2 2.333 2 4.5" />
+            </SIEMPRE>
+
+        </defs>
+    </svg>
+
+    <div id="app-container" class="max-w-6xl mx-auto">
+
+        <header id="hud" class="sticky top-0 z-30 bg-opacity-80 backdrop-blur-sm bg-gray-900 p-4 border-b-4 border-gray-700 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left">
+                    <label for="team-name-hud" class="text-sm uppercase font-display text-gray-400">Agente:</label>
+                    <div id="team-name-display" class="text-2xl font-display text-white">---</div>
+                </div>
+                
+                <div class="flex-shrink-0">
+                    <img id="planet-sprite" src="https://placehold.co/100x100/050505/555?text=Planeta+0%25" alt="Progreso del Planeta" class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-gray-700">
+                </div>
+
+                <div class="w-full md:w-1/3">
+                    <div class="exp-bar-container">
+                        <div id="exp-bar-inner" class="exp-bar-inner">0%</div>
+                    </div>
+                    <div class="text-center mt-1 text-lg">Puntuación Total: <span id="total-points-display" class="font-bold text-white">0</span> / 150</div>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content" class="pb-24">
+
+            <section id="view-map" class="view-container">
+                
+                <div class="mb-10 p-2 border-4 border-gray-700 bg-gray-900">
+                    <img src="mando-logo.jpg" alt="Mando CODE HOPE con logo del colegio N.S. de la Vega" class="w-full">
+                </div>
+                <header class="text-center mb-10">
+                    <h1 class="text-5xl md:text-7xl font-display text-glow mb-2">CODE HOPE</h1>
+                    <h2 class="text-2xl md:text-3xl text-accent">Agentes por un Mundo Mejor</h2>
+                    <p class="text-lg text-gray-300 mt-4 max-w-2xl mx-auto">Eres un Agente CODE HOPE. Completa misiones para ayudar al planeta. ¡Tu primera misión es nombrar a tu equipo!</p>
+                </header>
+
+                <div class="max-w-md mx-auto mb-12 p-4 border-2 border-gray-700 bg-gray-800">
+                    <label for="team-name-input" class="block text-xl text-center font-display text-glow mb-3">Nombre del Equipo</label>
+                    <input type="text" id="team-name-input" placeholder="Ej: Los Recicladores Alfa" class="text-center text-xl mb-4">
+                    
+                    <label for="team-class-select" class="block text-xl text-center font-display text-glow mb-3">Aula</label>
+                    <select id="team-class-select" class="text-center text-xl w-full bg-gray-700 border-2 border-accent text-white p-2">
+                        <option value="">Selecciona tu aula...</option>
+                        <option value="A">2º ESO A</option>
+                        <option value="B">2º ESO B</option>
+                        <option value="C">2º ESO C</option>
+                    </select>
+
+                    <p class="text-center text-sm mt-4 text-gray-400">Ambos campos son obligatorios para guardar tu progreso.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div id="tile-level-1" data-level="1" class="pixel-tile nav-level">
+                        <span class="tile-badge hidden">
+                            <svg class="w-10 h-10 text-green-400" fill="currentColor"><use href="#icon-check-badge"></use></svg>
+                        </span>
+                        <div class="tile-lock-overlay">
+                            <svg class="w-16 h-16 text-red-500" fill="currentColor"><use href="#icon-lock"></use></svg>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <svg class="w-12 h-12 flex-shrink-0" stroke="currentColor" fill="none"><use href="#icon-robot"></use></svg>
+                            <h3 class="text-xl">Nivel 1</h3>
+                        </div>
+                        <h4 class="text-2xl text-white">El mensaje oculto</h4>
+                        <p class="text-lg text-gray-400">Sistema Binario (25 pts)</p>
+                    </div>
+
+                    <div id="tile-level-2" data-level="2" class="pixel-tile nav-level">
+                        <span class="tile-badge hidden">
+                            <svg class="w-10 h-10 text-green-400" fill="currentColor"><use href="#icon-check-badge"></use></svg>
+                        </span>
+                        <div class="tile-lock-overlay">
+                            <svg class="w-16 h-16 text-red-500" fill="currentColor"><use href="#icon-lock"></use></svg>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <svg class="w-12 h-12 flex-shrink-0" stroke="currentColor" fill="none"><use href="#icon-lightbulb"></use></svg>
+                            <h3 class="text-xl">Nivel 2</h3>
+                        </div>
+                        <h4 class="text-2xl text-white">La puerta doble</h4>
+                        <p class="text-lg text-gray-400">Lógica AND (25 pts)</p>
+                    </div>
+
+                    <div id="tile-level-3" data-level="3" class="pixel-tile nav-level">
+                        <span class="tile-badge hidden">
+                            <svg class="w-10 h-10 text-green-400" fill="currentColor"><use href="#icon-check-badge"></use></svg>
+                        </span>
+                        <div class="tile-lock-overlay">
+                            <svg class="w-16 h-16 text-red-500" fill="currentColor"><use href="#icon-lock"></use></svg>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <svg class="w-12 h-12 flex-shrink-0" stroke="currentColor" fill="none"><use href="#icon-recycle"></use></svg>
+                            <h3 class="text-xl">Nivel 3</h3>
+                        </div>
+                        <h4 class="text-2xl text-white">Una oportunidad de cambio</h4>
+                        <p class="text-lg text-gray-400">Lógica OR (25 pts)</p>
+                    </div>
+
+                    <div id="tile-level-4" data-level="4" class="pixel-tile nav-level">
+                        <span class="tile-badge hidden">
+                            <svg class="w-10 h-10 text-green-400" fill="currentColor"><use href="#icon-check-badge"></use></svg>
+                        </span>
+                        <div class="tile-lock-overlay">
+                            <svg class="w-16 h-16 text-red-500" fill="currentColor"><use href="#icon-lock"></use></svg>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <svg class="w-12 h-12 flex-shrink-0" stroke="currentColor" fill="none"><use href="#icon-search"></use></svg>
+                            <h3 class="text-xl">Nivel 4</h3>
+                        </div>
+                        <h4 class="text-2xl text-white">Buscando soluciones</h4>
+                        <p class="text-lg text-gray-400">Listas y Búsqueda (25 pts)</p>
+                    </div>
+
+                    <div id="tile-level-5" data-level="5" class="pixel-tile nav-level">
+                        <span class="tile-badge hidden">
+                            <svg class="w-10 h-10 text-green-400" fill="currentColor"><use href="#icon-check-badge"></use></svg>
+                        </span>
+                        <div class="tile-lock-overlay">
+                            <svg class="w-16 h-16 text-red-500" fill="currentColor"><use href="#icon-lock"></use></svg>
+                        </div>
+                        <div class="flex items-center gap-4 mb-3">
+                            <svg class="w-12 h-12 flex-shrink-0" stroke="currentColor" fill="none"><use href="#icon-brain"></use></svg>
+                            <h3 class="text-xl">Nivel 5</h3>
+                        </div>
+                        <h4 class="text-2xl text-white">La IA recicladora</h4>
+                        <p class="text-lg text-gray-400">IA Básica (40 pts)</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="view-level-template" class="view-container max-w-3xl mx-auto">
+                <button data-view="map" class="nav-button pixel-button mb-6">&lt; Volver al Tablero</button>
+                
+                <header class="text-center mb-8">
+                    <h1 id="level-title" class="text-4xl md:text-5xl text-glow mb-4">---</h1>
+                    <p id="level-narrative" class="text-lg text-gray-300">---</p>
+                </header>
+
+                <div class="bg-gray-800 border-2 border-gray-700 p-6 mb-6">
+                    <h3 class="text-2xl font-display text-accent mb-3">Instrucciones</h3>
+                    <ul id="level-instructions" class="list-disc list-inside text-lg space-y-2">
+                        </ul>
+                </div>
+
+                <div class="bg-gray-800 border-2 border-gray-700 p-6">
+                    <h3 class="text-2xl font-display text-accent mb-4">Entrega de Evidencia</h3>
+                    
+                    <div class="mb-4">
+                        <label for="level-link-input" class="block text-xl mb-2">Pega aquí tu enlace (Scratch, Docs, etc.)</label>
+                        <input type="text" id="level-link-input" placeholder="https://scratch.mit.edu/projects/...">
+                        <span id="scratch-ok-badge" class="hidden text-sm text-green-400 mt-1">¡Enlace de Scratch detectado!</span>
+                        <p class="text-sm text-gray-400 mt-2">También puedes subir una captura de pantalla (Próximamente). Por ahora, usa un enlace.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="level-note-input" class="block text-xl mb-2">Nota breve del equipo (Opcional)</label>
+                        <textarea id="level-note-input" rows="3" placeholder="Ej: Nos ha costado un poco la parte de..."></textarea>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <button id="level-save-button" class="pixel-button primary text-xl">Guardar Evidencia</button>
+                        <button id="level-preview-button" class="pixel-button">Vista Previa (Scratch)</button>
+                        <button id="level-copy-button" class="pixel-button" disabled>Copiar Evidencia</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-dashboard" class="view-container">
+                <header class="text-center mb-10">
+                    <h1 class="text-4xl md:text-5xl text-glow mb-2">Dashboard del Profesor</h1>
+                    <p class="text-lg text-gray-300">Gestión de evidencias y puntuaciones.</p>
+                </header>
+
+                <div class="flex flex-wrap gap-4 mb-6 bg-gray-800 p-4 border-2 border-gray-700">
+                    <div class="flex-1">
+                        <label for="filter-team" class="block text-sm text-gray-400">Filtrar por Equipo</label>
+                        <input type="text" id="filter-team" placeholder="Nombre del equipo..." class="text-base p-2">
+                    </div>
+                    <div class="flex-1">
+                        <label for="filter-level" class="block text-sm text-gray-400">Filtrar por Nivel</label>
+                        <select id="filter-level" class="w-full bg-gray-700 border-2 border-accent text-white p-2 text-base">
+                            <option value="">Todos</option>
+                            <option value="1">Nivel 1</option>
+                            <option value="2">Nivel 2</option>
+                            <option value="3">Nivel 3</option>
+                            <option value="4">Nivel 4</option>
+                            <option value="5">Nivel 5</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="filter-status" class="block text-sm text-gray-400">Filtrar por Estado</label>
+                        <select id="filter-status" class="w-full bg-gray-700 border-2 border-accent text-white p-2 text-base">
+                            <option value="">Todos</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="validated">Validado</option>
+                            <option value="correction">Corrección</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 mb-6 justify-center">
+                    <button id="dashboard-refresh" class="pixel-button primary">Refrescar Datos</button>
+                    <button id="dashboard-export-csv" class="pixel-button">Exportar CSV</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table id="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Equipo</th>
+                                <th>Nivel</th>
+                                <th>Puntos</th>
+                                <th>Enlace</th>
+                                <th>Nota Equipo</th>
+                                <th>Timestamp</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <tr>
+                                <td colspan="8" class="text-center p-8">Cargando datos... o no hay evidencias.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="view-guide" class="view-container max-w-3xl mx-auto p-6 bg-gray-800 border-2 border-gray-700">
+                <h1 class="text-4xl text-glow mb-6 text-center">Guía Rápida (Profe)</h1>
+                <div class="space-y-4 text-lg text-gray-300">
+                    <p><strong>1.</strong> Los alumnos pegan el enlace de su proyecto y hacen clic en "Guardar evidencia".</p>
+                    <p><strong>2.</strong> Las evidencias aparecen en el "Dashboard del profesor" (aquí).</p>
+                    <p><strong>3.</strong> Revisa el enlace ("Ver") y pulsa "Validar" si la entrega es correcta. Añade una nota si hace falta corrección.</p>
+                    <p><strong>4.</strong> Pulsa "Asignar a ClassDojo" (próximamente) para copiar el texto y pegarlo en ClassDojo.</p>
+                    <p><strong>5.</strong> "Exportar CSV" genera un registro de todas las entregas.</p>
+                    <p><strong>Bonus:</strong> Si todas las evidencias de un equipo son validadas (sin correcciones pendientes), se asignará un bonus de +10 pts al final (gestión manual por ahora).</p>
+                </div>
+                <button data-view="map" class="nav-button pixel-button mt-8">&lt; Volver al Tablero</button>
+            </section>
+        
+        </main>
+    </div>
+
+    <footer class="fixed bottom-0 left-0 right-0 z-40 bg-gray-900 bg-opacity-80 backdrop-blur-sm border-t-4 border-gray-700 p-3">
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4">
+            <button data-view="map" class="nav-button pixel-button text-sm">Tablero</button>
+            <button id="show-evidences-button" class="pixel-button text-sm">Evidencias</button>
+            <button data-view="guide" class="nav-button pixel-button text-sm">Guía</button>
+            <button data-view="dashboard" class="nav-button pixel-button text-sm primary">Dashboard</button>
+        </nav>
+    </footer>
+
+    <div id="modal-evidences" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 class="text-3xl text-glow mb-4">Mis Evidencias</h2>
+            <div id="evidences-list-container" class="space-y-3 max-h-60 overflow-y-auto">
+                </div>
+            <button onclick="closeModal('modal-evidences')" class="pixel-button mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modal-scratch-preview" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 class="text-3xl text-glow mb-4">Imán Scratch</h2>
+            <div id="scratch-embed-container" class="aspect-video">
+                </div>
+            <p id="scratch-fallback-message" class="text-gray-400 mt-2 text-center">Si la vista previa no carga, es posible que el enlace no sea válido o esté bloqueado. <br><a id="scratch-open-link" href="#" target="_blank" class="text-accent underline">Abrir en Scratch</a></p>
+            <button onclick="closeModal('modal-scratch-preview')" class="pixel-button mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modal-error" class="modal-backdrop">
+        <div class="modal-content border-red-500 shadow-red-500/50">
+            <h2 class="text-3xl text-red-500 font-display mb-4">¡ALERTA, AGENTE!</h2>
+            <p id="modal-error-message" class="text-lg text-white">---</p>
+            <button onclick="closeModal('modal-error')" class="pixel-button mt-6">Entendido</button>
+        </div>
+    </div>
+
+    <div id="modal-victory" class="modal-backdrop">
+        <div class="modal-content text-center">
+            <div class="confetti" style="left: 10%;"></div>
+            <div class="confetti" style="left: 30%;"></div>
+            <div class="confetti" style="left: 50%;"></div>
+            <div class="confetti" style="left: 70%;"></div>
+            <div class="confetti" style="left: 90%;"></div>
+
+            <h1 class="text-4xl text-glow mb-4">¡MISIÓN CUMPLIDA!</h1>
+            <img src="https://placehold.co/150x150/050505/00FF9C?text=PLANETA+100%25" alt="Planeta Restaurado" class="w-32 h-32 rounded-full mx-auto my-4 border-4 border-glow">
+            <p class="text-2xl text-white mb-2">¡Lo lograste, Agente CODE HOPE!</p>
+            <p class="text-xl text-gray-300 mb-6">Has restaurado el planeta. 🌍</p>
+            <p id="victory-score-display" class="text-3xl font-display text-white mb-8">Puntuación Final: 150 pts</p>
+            
+            <button onclick="closeModal('modal-victory')" class="pixel-button primary">¡GENIAL!</button>
+        </div>
+    </div>
+
+    <div id="toast-feedback"></div>
+
+
+    <script src="app.js" defer></script>
+
+</body>
+</html>
